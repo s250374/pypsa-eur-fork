@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+#tutorial: true
+
+
+run:
+  name: "nina" # use this to keep track of runs with different settings
+  disable_progressbar: true
+  shared_resources:
+    policy: false
+  shared_cutouts: true
+
+# scenario:
+#   clusters:
+#   - 9
+#   opts:
+#   - ''
+#   planning_horizons:
+#   - 2025 # setting horizon to 2025
+
+planning_horizons:
+- 2025
+
+clustering:
+  cluster_network:
+    n_clusters: 9
+  exclude_carriers: ["OCGT", "offwind-ac", "coal"]
+  temporal:
+    resolution_elec: 1H
+
+countries: ['DK'] # included countries
+
+snapshots:
+  start: "2013-03-01"
+  end: "2013-03-08"
+
+electricity:
+  # co2limit_enable: true # using an limit based on EU emission and system laod
+  # co2limit: 5.46e+9 # limit based on pr country emission intensity (2023)
+
+  extendable_carriers:
+    Generator: [] 
+    StorageUnit: [battery] # only include battery to make it feasible
+    Store: []
+    Link: []
+
+  renewable_carriers: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, hydro] #adding hydro
+  
+  estimate_renewable_capacities:
+    enable: true
+    from_gem: true
+    year: 2020
+    expansion_limit: false
+    technology_mapping:
+      Offshore: offwind-ac
+      Onshore: onwind
+      PV: solar
+  
+  transmission_limit: v1.0 #cannot expand transmission capacity
+
+costs:
+  emission_prices:
+    enable: true
+    co2: 200
+
+atlite:
+  default_cutout: europe-2013-sarah3-era5
+  cutouts:
+    europe-2013-sarah3-era5:
+      module: era5
+      x: [-12., 32.0]
+      y: [47.0, 72.0] 
+      time: ["2013-01-01", "2013-12-31"]
+
+
+renewable:
+  offwind-ac:
+    max_depth: false
+  offwind-dc:
+    max_depth: false
+  offwind-float:
+    max_depth: false
+    min_depth: false
+
+
+lines:
+  dynamic_line_rating:
+    activate: false
+
+sector:
+  enabled: false
+
+
+solving:
+  tmpdir: '/tmp'
+
+  solver:
+    name: gurobi
+
+  check_objective:
+    enable: false
+    expected_value: 3.8120188094e+07
